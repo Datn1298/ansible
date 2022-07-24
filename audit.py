@@ -1,18 +1,8 @@
 from run_ansible import *
+from file import *
 
-"""
-Kiểm tra Datetime của OS
-- Lấy ngày giờ hiện tại của OS
-- Kết quả trả về: ngày giờ
-"""
 
-def audit_datetime(inventory):
-    task = [
-        dict(action=dict(module='shell', args='date'))
-    ]
-    name_task = "Audit Datetime"
-    ip, status, result, error, date = run_ansible(task, "audit", inventory)
-    return {"ip": ip, "task": name_task, "status": status, "result": result, "error": error, "date": date, }
+
 
 # fix sau
 """
@@ -29,19 +19,6 @@ Kiểm tra monitor:
 #   ip, status, result, error, date = run_ansible(task, "audit", inventory)
 #   return { "ip": ip, "task": name_task, "status": status, "result": result, "error": error, "date": date,}
 
-"""
-Kiểm tra monitor:
-- Kiểm tra xem port 10050 đã được sử dụng chưa
-- Kết quả: port 10050
-"""
-
-def audit_port10050(inventory):
-    task = [
-        dict(action=dict(module='shell', args='netstat -alntp | grep 10050'))
-    ]
-    name_task = "Audit Port 10050"
-    ip, status, result, error, date = run_ansible(task, "audit", inventory)
-    return {"ip": ip, "task": name_task, "status": status, "result": result, "error": error, "date": date, }
 
 
 
@@ -123,16 +100,58 @@ def check_install(inventory, package):
     output = run_ansible(task_status, "get_list_output", inventory)
     return {"status": output}
 
+def audit_list_package(inventory):
+
+    task_status = [dict(action=dict(module='shell', args='dpkg -l | grep "^ii" | awk \'{print $1}\''))]
+    task_name = [dict(action=dict(module='shell', args='dpkg -l | grep "^ii" | awk \'{print $2}\''))]
+    task_version = [dict(action=dict(module='shell', args='dpkg -l | grep "^ii" | awk \'{print $3}\''))]
+    task_description = [dict(action=dict(module='shell', args='dpkg -l | grep "^ii" | awk \'{print $5}\''))]
+    status = run_ansible(task_status, "get_list_output", inventory)
+    name = run_ansible(task_name, "get_list_output", inventory)
+    version = run_ansible(task_version, "get_list_output", inventory)
+    description = run_ansible(task_description, "get_list_output", inventory)
+
+    list = []
+    output = []
+    for i in range(len(status)):
+        for j in range(len(status[i])):
+            print(name[i][j])
+            output.append({ \
+                "Status": status[i][j],
+                "Name": name[i][j],
+                "Version": version[i][j],
+                "Description": description[i][j],
+            })
+        list.append(output)
+
+    return {"status": list}
+
+
+def audit_datetime(inventory):
+    args = "date '+%Y/%m/%d %H:%M:%S'"
+    task = [dict(action=dict(module='shell', args=args))]
+    output = run_ansible(task, "get_list_output", inventory)
+    return {"Datetime": output}
+   
+    
+
 def audit_port(inventory, port):
     args = f"netstat -alntp | grep {port}" 
     task = [dict(action=dict(module='shell', args=args))]
     output = run_ansible(task, "get_list_output", inventory)
-    return {"Port 5044": output}
+    return {f"Port {port}": output}
 
 def audit_port5044(inventory):
     task = [dict(action=dict(module='shell', args='netstat -alntp | grep 5044'))]
     output = run_ansible(task, "get_list_output", inventory)
     return {"Port 5044": output}
+
+def audit_port10050(inventory):
+    task = [dict(action=dict(module='shell', args='netstat -alntp | grep 10050'))]
+    output = run_ansible(task, "get_list_output", inventory)
+    return {"Port 5044": output}
+
+
 
 def audit_group(inventory):
     task = [
@@ -252,6 +271,12 @@ def audit_pass_max_days(inventory):
     output = run_ansible(task, "get_list_output", inventory)
     return {"PASS_MAX_DAY": output}
 
+def get_string(inventory, file, str):
+    args = f"cat {file} | grep {str}" + "| awk '{print $2}'"
+    task = [dict(action=dict(module='shell',args=args))]
+    output = run_ansible(task, "get_list_output", inventory)
+    return {str: output}
+
 def audit_pass_min_days(inventory):
     task = [dict(action=dict(module='shell',args='cat /etc/login.defs | grep "^PASS_MIN_DAYS.*" | awk \'{print $2}\''))]
     output = run_ansible(task, "get_list_output", inventory)
@@ -277,72 +302,16 @@ def audit_port_ssh(inventory):
     output = run_ansible(task, "get_list_output", inventory)
     return {"Port SSH": output}
 
-def change_permission_file(_file, _mode, inventory):
-    task=[
-        dict(action=dict(module='file', args=dict(path=_file, mode=_mode)))
-    ]
-    run_ansible(task, "shell", "")
+def audit_host_allow(inventory):
+    task = [dict(action=dict(module='shell',args='cat /etc/hosts.allow | grep -wv "^#"'))]
+    output = run_ansible(task, "get_list_output", inventory)
+    return {"host_allow": output}
 
-def audit_permission_file(_file, inventory, expected):
-    args = f"ls -la {_file} | awk " + "'{print $1}'"
-    task=[
-        dict(action=dict(module='shell', args=args))
-    ]
-    output = run_ansible(task, "get_list_output", "")
-    print(output)
-    object = handle_permission(_file, ''.join(output[0]), expected)
-    print(output[1])
-    return object
+def audit_host_deny(inventory):
+    task = [dict(action=dict(module='shell',args='cat /etc/hosts.allow | grep -wv "^#"'))]
+    output = run_ansible(task, "get_list_output", inventory)
+    return {"host_deny": output}
 
-def handle_permission(_file, str, expected):
-    switcher={
-        '-': 'File',
-        'd':'Director',
-        'l':'Link',
-    }
-    first = switcher.get(str[0])
-    user = str[1:4]
-    group = str[4:7]
-    other = str[7:10]
-    permission = []
-    if(str != expected):
-        status = "Chưa config"
-    else: 
-        status = "Đã config"
-    permission.append({f"{str[0]}": first, "User": user, "Group": group, "Other": other, "Status": status})
-    return {f"{_file}": permission}
-
-# def audit_permission(inventory):
-#     task = [
-#         dict(action=dict(module='shell', args='true'))
-#     ]
-#     name_task = "Lấy thông tin chung của server"
-#     ip, status, error, output, time = run_ansible(task, "audit", inventory)
-
-#     name_task = "Audit important files's permission"
-
-#     permission_etc_group = "-rw-r--r--"
-#     permission_etc_shadow = "-rw-r--r--"
-#     permission_etc_passwd = "-rw-r--r--"
-#     permission_etc_fstab = "-rw-r--r--"
-#     output=[]
-#     list = []
-
-#     for i in range(len(ip)):
- 
-#         output[i] = result
-
-#         list.append({"ip": ip[i], "task": name_task, "output": output[i],
-#                     "status": status[i], "error": error[i], "date": time[i]})
-
-#     return {"output": list}
-
-#     output.append(audit_permission_file("/etc/group", inventory, permission_etc_group))
-#     output.append(audit_permission_file("/etc/shadow", inventory, permission_etc_shadow))
-#     output.append(audit_permission_file("/etc/passwd", inventory, permission_etc_passwd))
-#     output.append(audit_permission_file("/etc/fstab", inventory, permission_etc_fstab))
-
-#     return {name_task: output}
 
 def audit_os(inventory):
     task = [
@@ -351,49 +320,106 @@ def audit_os(inventory):
     name_task = "Lấy thông tin chung của server"
     ip, status, error, output, time = run_ansible(task, "audit", inventory)
 
-    list_pass_max_days=audit_pass_max_days(inventory)
-    list_pass_min_days=audit_pass_min_days(inventory)
-    list_pass_min_len=audit_pass_min_len(inventory)
-    list_pass_warn_age=audit_pass_warn_age(inventory)
-    list_permitroot=audit_permitroot(inventory)
-    list_port_ssh=audit_port_ssh(inventory)
-    port_open=audit_port_open(inventory)
-    network_connection=audit_network_connection(inventory)
-    list_check_install_sudo=check_install(inventory, "sudo")
-    list_check_install_filebeat=check_install(inventory, "filebeat")
+    list_datetime=audit_datetime(inventory)
+    # list_pass_max_days=get_string(inventory, "/etc/login.defs", "^PASS_MAX_DAYS.*")
+    # list_pass_min_days=get_string(inventory, "/etc/login.defs", "^PASS_MIN_DAYS.*")
+    # list_pass_min_len=get_string(inventory, "/etc/login.defs", "^PASS_MIN_LEN.*")
+    # list_pass_warn_age=get_string(inventory, "/etc/login.defs", "^PASS_WARM_AGE.*")
+
+    # list_permitroot=get_string(inventory, "/etc/ssh/sshd_config", "^PermitRootLogin")
+    # list_port_ssh=get_string(inventory, "/etc/ssh/sshd_config", "^Port")
+    # list_pubkey_authen=get_string(inventory, "/etc/ssh/sshd_config", "^PubkeyAuthentication")
+    # list_host_allow=audit_host_allow(inventory)
+    # list_host_deny=audit_host_deny(inventory)
+
+    # port_open=audit_port_open(inventory)
+    # network_connection=audit_network_connection(inventory)
+    # list_check_install_sudo=check_install(inventory, "sudo")
+    # list_check_install_filebeat=check_install(inventory, "filebeat")
+    # list_check_install_zabbix_agent=check_install(inventory, "zabbix-agent")
+    # list_check_port_5044=audit_port(inventory, "5044")
+    # list_check_port_10050=audit_port(inventory, "10050")
+
+    list_package=audit_list_package(inventory)
+
+
+    # name_file = ["/etc/passwd", "/etc/group", "/etc/shadow", "/etc/fstab"]
+    # file_permission = ["-rw-r--r--"," -rw-r--r--", "----------", "-rw-r--r--"]
+    # for i in range(name_file):
+    #     name
+
+    #     f"check{name_file[i]}" = audit_permission_file(name_file[i], inventory, file_permission[i])
+
+    # print(check/etc/passwd)
+    # list_check_file_etc_passwd=audit_permission_file("/etc/passwd", inventory,  "-rw-r--r--")
+    # list_check_file_etc_passwd=audit_permission_file("/etc/passwd", inventory,  "-rw-r--r--")
+    # list_check_file_etc_passwd=audit_permission_file("/etc/passwd", inventory,  "-rw-r--r--")
+    # list_check_file_etc_passwd=audit_permission_file("/etc/passwd", inventory,  "-rw-r--r--")
+
 
     list = []
 
     for i in range(len(ip)):
-        if (array_to_string((list_check_install_filebeat['status'][i]))) == 'ii' :
-            output[i].append({ \
-                "Package Firebeat": handle_status(array_to_string((list_check_install_filebeat['status'][i]))),
+        # output[i].append({
+        #     "Audit Datetime": {
+        #         "Datetime": array_to_string(list_datetime['Datetime'][i])
+        #         }})
+        output[i].append({"Datetime": array_to_string(list_datetime['Datetime'][i])})
+        # if (array_to_string((list_check_install_filebeat['status'][i]))) == 'ii' :
+        #     output[i].append({ \
+        #         "Package Firebeat": handle_status(array_to_string((list_check_install_filebeat['status'][i]))),
+        #         "Port 5044": handle_status(array_to_string((list_check_port_5044['status'][i]))),
+        #         })
+        # else: 
+        #     output[i].append({"Package Firebeat": handle_status(array_to_string((list_check_install_filebeat['status'][i])))})
+        # if (array_to_string((list_check_install_zabbix_agent['status'][i]))) == 'ii' :
+        #     output[i].append({ \
+        #         "Zabbix-agent": handle_status(array_to_string((list_check_install_zabbix_agent['status'][i]))),
+        #         "Port 10050": handle_status(array_to_string((list_check_port_10050['status'][i]))),
+        #         })
+        # else: 
+        #     output[i].append({"Zabbix-agent": handle_status(array_to_string((list_check_install_zabbix_agent['status'][i])))})
 
-                })
-        else: 
-            output[i].append({"Package Firebeat": handle_status(array_to_string((list_check_install_filebeat['status'][i])))})
-        output[i].append(audit_crontab(inventory))
-        output[i].append({ \
-            "PASS_MAX_DAY": array_to_string(list_pass_max_days['PASS_MAX_DAY'][i]),
-            "PASS_MIN_DAYS": array_to_string(list_pass_min_days['PASS_MIN_DAYS'][i]),
-            "PASS_MIN_LEN": array_to_string(list_pass_min_len['PASS_MIN_LEN'][i]),
-            "PASS_WARN_AGE": array_to_string(list_pass_warn_age['PASS_WARN_AGE'][i])})
+        # handle_output = handle_permission("/etc/passwd", list_check_file_etc_passwd['permission_file'][i][0], "-rw-r--r--")
+
+        # output[i].append({ "Audit SSH": {
+        #     "PermitRootLogin": array_to_string(list_permitroot['^PermitRootLogin'][i]),
+        #     "Port SSH": array_to_string(list_port_ssh['^Port'][i]),
+        #     "PubkeyAuthentication": array_to_string(list_pubkey_authen['^PubkeyAuthentication'][i])
+        #         }
+            
+        #     })
+
+        # output[i].append({   "PermitRootLogin": array_to_string(list_permitroot['^PermitRootLogin'][i]),
+        #     "Port SSH": array_to_string(list_port_ssh['^Port'][i]),
+        #     "PubkeyAuthentication": array_to_string(list_pubkey_authen['^PubkeyAuthentication'][i]),
+        #     "Hosts allow": array_to_string(list_host_allow['host_allow'][i]),
+        #     "Hosts deny": array_to_string(list_host_deny['host_deny'][i]),       
+        #     })
+
+
+
+
+        # output[i].append(audit_crontab(inventory))
+        # output[i].append({ \
+        #     "PASS_MAX_DAY": array_to_string(list_pass_max_days['^PASS_MAX_DAYS.*'][i]),
+        #     "PASS_MIN_DAYS": array_to_string(list_pass_min_days['^PASS_MIN_DAYS.*'][i]),
+        #     "PASS_MIN_LEN": array_to_string(list_pass_min_len['^PASS_MIN_LEN.*'][i]),
+        #     "PASS_WARN_AGE": array_to_string(list_pass_warn_age['^PASS_WARM_AGE.*'][i])})
         # output[i].append({"PermitRootLogin": array_to_string(list_permitroot['PermitRootLogin'][i])})
-        output[i].append({ \
-            "Port SSH": array_to_string(list_port_ssh['Port SSH'][i]),
-            "PermitRootLogin": "no"
-            })
-        output[i].append({ \
-            "Port Open": port_open['output'][i]['Port Open'], 
-            "Network Connect": network_connection['output'][i]['Network Connect']
-            })
+
+
+        # output[i].append({ \
+        #     "Port Open": port_open['output'][i]['Port Open'], 
+        #     "Network Connect": network_connection['output'][i]['Network Connect']
+        #     })
 
         # output[i].append({"Package Sudo": handle_status(array_to_string((list_check_install_sudo['status'][i])))})
         
         list.append({"ip": ip[i], "task": name_task, "output": output[i],
                     "status": status[i], "error": error[i], "date": time[i]})
 
-    return {"output": list}
+    return {"output": list_package}
 
 
 def array_to_string(list):

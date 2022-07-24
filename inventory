@@ -1,0 +1,17 @@
+[test]
+datnt@192.168.0.11
+
+[test:vars]
+ansible_ssh_user=datnt
+ansible_ssh_password=1
+ansible_sudo_pass=1
+ansible_ssh_extra_args='-o StrictHostKeyChecking=no'
+
+[test]
+datnt@192.168.0.12
+
+[test:vars]
+ansible_ssh_user=datnt
+ansible_ssh_password=1
+ansible_sudo_pass=1
+ansible_ssh_extra_args='-o StrictHostKeyChecking=no'

@@ -66,7 +66,7 @@ def run_ansible(_task, _type, _inventory):
     results_callback = ResultsCollectorJSONCallback()
 
     # create inventory, use path to host config file as source or hosts in a comma separated string
-    inventory = InventoryManager(loader=loader, sources="app/inventory")
+    inventory = InventoryManager(loader=loader, sources="inventory")
 
     # get time
     now = datetime.now()
@@ -167,7 +167,6 @@ def run_ansible(_task, _type, _inventory):
     elif (_type == "get_list_output"):
         output = []
         for host, result in results_callback.host_ok.items():
-            print("=======================", result._result['stdout_lines'])
             output.append(result._result['stdout_lines'])
             if(result._result['stdout_lines'] == ""):
                 output.append("")
