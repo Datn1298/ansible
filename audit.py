@@ -141,18 +141,6 @@ def audit_port(inventory, port):
     output = run_ansible(task, "get_list_output", inventory)
     return {f"Port {port}": output}
 
-def audit_port5044(inventory):
-    task = [dict(action=dict(module='shell', args='netstat -alntp | grep 5044'))]
-    output = run_ansible(task, "get_list_output", inventory)
-    return {"Port 5044": output}
-
-def audit_port10050(inventory):
-    task = [dict(action=dict(module='shell', args='netstat -alntp | grep 10050'))]
-    output = run_ansible(task, "get_list_output", inventory)
-    return {"Port 5044": output}
-
-
-
 def audit_group(inventory):
     task = [
         dict(action=dict(module='shell',
@@ -277,41 +265,6 @@ def get_string(inventory, file, str):
     output = run_ansible(task, "get_list_output", inventory)
     return {str: output}
 
-def audit_pass_min_days(inventory):
-    task = [dict(action=dict(module='shell',args='cat /etc/login.defs | grep "^PASS_MIN_DAYS.*" | awk \'{print $2}\''))]
-    output = run_ansible(task, "get_list_output", inventory)
-    return {"PASS_MIN_DAYS": output}
-
-def audit_pass_min_len(inventory):
-    task = [dict(action=dict(module='shell',args='cat /etc/login.defs | grep "^PASS_MIN_LEN.*" | awk \'{print $2}\''))]
-    output = run_ansible(task, "get_list_output", inventory)
-    return {"PASS_MIN_LEN": output}
-
-def audit_pass_warn_age(inventory):
-    task = [dict(action=dict(module='shell',args='cat /etc/login.defs | grep "^PASS_WARN_AGE.*" | awk \'{print $2}\''))]
-    output = run_ansible(task, "get_list_output", inventory)
-    return {"PASS_WARN_AGE": output}
-
-def audit_permitroot(inventory):
-    task = [dict(action=dict(module='shell',args='cat /etc/ssh/sshd_config | grep \'^PermitRootLogin.*\''))]
-    output = run_ansible(task, "get_list_output", inventory)
-    return {"PermitRootLogin": output}
-
-def audit_port_ssh(inventory):
-    task = [dict(action=dict(module='shell',args='cat /etc/ssh/sshd_config | grep \'^Port.*\' | awk \'{print $2}\''))]
-    output = run_ansible(task, "get_list_output", inventory)
-    return {"Port SSH": output}
-
-def audit_host_allow(inventory):
-    task = [dict(action=dict(module='shell',args='cat /etc/hosts.allow | grep -wv "^#"'))]
-    output = run_ansible(task, "get_list_output", inventory)
-    return {"host_allow": output}
-
-def audit_host_deny(inventory):
-    task = [dict(action=dict(module='shell',args='cat /etc/hosts.allow | grep -wv "^#"'))]
-    output = run_ansible(task, "get_list_output", inventory)
-    return {"host_deny": output}
-
 
 def audit_os(inventory):
     task = [
@@ -340,7 +293,7 @@ def audit_os(inventory):
     # list_check_port_5044=audit_port(inventory, "5044")
     # list_check_port_10050=audit_port(inventory, "10050")
 
-    list_package=audit_list_package(inventory)
+    # list_package=audit_list_package(inventory)
 
 
     # name_file = ["/etc/passwd", "/etc/group", "/etc/shadow", "/etc/fstab"]
@@ -382,31 +335,9 @@ def audit_os(inventory):
 
         # handle_output = handle_permission("/etc/passwd", list_check_file_etc_passwd['permission_file'][i][0], "-rw-r--r--")
 
-        # output[i].append({ "Audit SSH": {
-        #     "PermitRootLogin": array_to_string(list_permitroot['^PermitRootLogin'][i]),
-        #     "Port SSH": array_to_string(list_port_ssh['^Port'][i]),
-        #     "PubkeyAuthentication": array_to_string(list_pubkey_authen['^PubkeyAuthentication'][i])
-        #         }
-            
-        #     })
-
-        # output[i].append({   "PermitRootLogin": array_to_string(list_permitroot['^PermitRootLogin'][i]),
-        #     "Port SSH": array_to_string(list_port_ssh['^Port'][i]),
-        #     "PubkeyAuthentication": array_to_string(list_pubkey_authen['^PubkeyAuthentication'][i]),
-        #     "Hosts allow": array_to_string(list_host_allow['host_allow'][i]),
-        #     "Hosts deny": array_to_string(list_host_deny['host_deny'][i]),       
-        #     })
-
-
-
 
         # output[i].append(audit_crontab(inventory))
-        # output[i].append({ \
-        #     "PASS_MAX_DAY": array_to_string(list_pass_max_days['^PASS_MAX_DAYS.*'][i]),
-        #     "PASS_MIN_DAYS": array_to_string(list_pass_min_days['^PASS_MIN_DAYS.*'][i]),
-        #     "PASS_MIN_LEN": array_to_string(list_pass_min_len['^PASS_MIN_LEN.*'][i]),
-        #     "PASS_WARN_AGE": array_to_string(list_pass_warn_age['^PASS_WARM_AGE.*'][i])})
-        # output[i].append({"PermitRootLogin": array_to_string(list_permitroot['PermitRootLogin'][i])})
+
 
 
         # output[i].append({ \
