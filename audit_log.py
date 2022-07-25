@@ -24,20 +24,21 @@ def audit_log(inventory):
     for i in range(len(ip)):
         if (array_to_string((list_check_install_filebeat['status'][i]))) == 'ii' :
             output[i].append({
-                "Filebeat": {
+                    "name": "Filebeat",
                     "value": handle_status_install(array_to_string((list_check_install_filebeat['status'][i]))),
-                    "status_check" : ""
-                },
-                "Port 10050": {
+                    "violate_policy" : "true"
+                })
+            output[i].append({
+                    "name": "Port 10050",
                     "value": handle_status_install(array_to_string((list_check_port_5044['status'][i]))),
-                    "status_check" : ""
-                }})
+                    "violate_policy" : "true"
+                })
         else: 
             output[i].append({
-                "Filebeat": {
+                    "name": "Filebeat",
                     "value": handle_status_install(array_to_string((list_check_install_filebeat['status'][i]))),
-                    "status_check" : ""
-                }})
+                    "violate_policy" : "false"
+                })
         list.append({"ip": ip[i], "task": name_task, "output": output[i],"status": status[i], "error": error[i], "date": time[i]})
 
     return {"output": list}

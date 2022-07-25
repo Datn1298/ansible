@@ -27,7 +27,3 @@ def audit_network_connection(inventory):
         output[i] = result
         list.append({"ip": ip[i], "task": name_task, "output": output[i], "status": status[i], "error": error[i], "date": time[i]})
     return {"output": list}
-
-
-
-

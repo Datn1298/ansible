@@ -26,10 +26,11 @@ def audit_datetime(inventory):
             status_audit.append("false")
 
     for i in range(len(ip)):
-        output[i].append({"Datetime": {
+        output[i].append({
+            "name": "Datetime",
             "value": array_to_string(list_datetime[i]),
-            "status": status_audit[i]
-        }})
+            "violate_policy": status_audit[i]
+        })
         
         list.append({"ip": ip[i], "task": name_task, "output": output[i], "status": status[i], "error": error[i], "date": time[i]})
 

@@ -18,27 +18,34 @@ def handle_permission(_file, str, expected):
     user = str[1:4]
     group = str[4:7]
     other = str[7:10]
-    permission = []
     if(str != expected):
-        status = "Chưa config"
+        status = "False"
     else: 
-        status = "Đã config"
-    permission.append({ 
-        f"{str[0]}": first, 
-        "User": user, 
-        "Group": group, 
-        "Other": other, 
-        "Status": status})
-    return {f"{_file}": permission}
+        status = "True"
+
+    output = f"{str[0]}" + f": {first} , User: {user}, Group: {group}, Other: {other}"
+
+    return {
+        "name": _file,
+        "value": output,  
+        "violate_policy": status
+    }
 
 def audit_permission_file(_file, inventory, expected):
-    args = f"ls -la {_file} | awk " + "'{print $1}'"
+    if _file[-1:] == "/":
+        _file=_file[:len(_file)-1]
+
+    arr = _file.split("/")
+    path= ('/'.join([str(elem) for elem in arr[:len(arr)-1]]))
+    name=arr[-1:][0]
+
+    args = f"ls -la {_file} | grep {name} | awk " + "'{print $1}'"
     task=[
         dict(action=dict(module='shell', args=args))
     ]
-    output = run_ansible(task, "get_list_output", "")
+    output = run_ansible(task, "get_list_output", inventory)
     return {"permission_file": output}
 
 def change_permission_file(_file, _mode, inventory):
     task=[dict(action=dict(module='file', args=dict(path=_file, mode=_mode)))]
-    run_ansible(task, "shell", "")
+    run_ansible(task, "shell", inventory)

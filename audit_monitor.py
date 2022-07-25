@@ -24,20 +24,20 @@ def audit_monitor(inventory):
     for i in range(len(ip)):
         if (array_to_string((list_check_install_zabbix_agent['status'][i]))) == 'ii' :
             output[i].append({
-                "Zabbix-agent": {
+                    "name": "Zabbix-agent",
                     "value": handle_status_install(array_to_string((list_check_install_zabbix_agent['status'][i]))),
-                    "status_check" : ""
-                },
-                "Port 10050": {
+                    "violate_policy" : "true"
+                },{
+                    "name": "Port 10050",
                     "value": handle_status_install(array_to_string((list_check_port_10050['status'][i]))),
-                    "status_check" : ""
-                }})
+                    "violate_policy" : "true"
+                })
         else: 
             output[i].append({
-                "Zabbix-agent": {
+                    "name": "Zabbix-agent", 
                     "value": handle_status_install(array_to_string((list_check_install_zabbix_agent['status'][i]))),
-                    "status_check" : ""
-                }})
+                    "violate_policy" : "false"
+                })
         list.append({"ip": ip[i], "task": name_task, "output": output[i],"status": status[i], "error": error[i], "date": time[i]})
 
     return {"output": list}

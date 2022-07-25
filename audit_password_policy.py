@@ -22,22 +22,24 @@ def audit_password_policy(inventory):
 
     for i in range(len(ip)):
         output[i].append({ \
-            "PASS_MAX_DAYS": {
+                "name": "PASS_MAX_DAYS",
                 "value": array_to_string(list_pass_max_days['^PASS_MAX_DAYS.*'][i]),
-                "status_check": ""
-            },
-            "PASS_MIN_DAYS": {
+                "violate_policy": handle_status_str(array_to_string(list_pass_max_days['^PASS_MAX_DAYS.*'][i]), "90")
+            })
+        output[i].append({
+                "name": "PASS_MIN_DAYS",
                 "value": array_to_string(list_pass_min_days['^PASS_MIN_DAYS.*'][i]),
-                "status_check": ""
-            },
-            "PASS_MIN_LEN": {
+                "violate_policy": handle_status_str(array_to_string(list_pass_min_days['^PASS_MIN_DAYS.*'][i]), "6")
+            })
+        output[i].append({
+                "name": "PASS_MIN_LEN",
                 "value": array_to_string(list_pass_min_len['^PASS_MIN_LEN.*'][i]),
-                "status_check": ""
-            },
-            "PASS_WARN_AGE": {
+                "violate_policy": handle_status_str(array_to_string(list_pass_min_len['^PASS_MIN_LEN.*'][i]), "14")
+            })
+        output[i].append({
+                "name": "PASS_WARN_AGE",
                 "value": array_to_string(list_pass_warn_age['^PASS_WARM_AGE.*'][i]),
-                "status_check": ""
-            }
-        })
+                "violate_policy": handle_status_str(array_to_string(list_pass_warn_age['^PASS_WARM_AGE.*'][i]), "7")
+            })
         list.append({"ip": ip[i], "task": name_task, "output": output[i],"status": status[i], "error": error[i], "date": time[i]})
     return {"output": list}

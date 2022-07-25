@@ -32,28 +32,34 @@ def audit_ssh(inventory):
     list = []
 
     for i in range(len(ip)):
-        output[i].append({ \
-            "PermitRootLogin": {
+        output[i].append({
+                "name": "PermitRootLogin",
                 "value": array_to_string(list_permitroot['^PermitRootLogin'][i]),
-                "status_check": handle_status_str(array_to_string(list_permitroot['^PermitRootLogin'][i]), "no")
-            },
-            "Port SSH": {
+                "violate_policy": handle_status_str(array_to_string(list_permitroot['^PermitRootLogin'][i]), "no")
+            })
+
+        output[i].append({
+                "name": "Port SSH",
                 "value": array_to_string(list_port_ssh['^Port'][i]),
-                "status_check": handle_status_str(array_to_string(list_port_ssh['^Port'][i]), "1309")
+                "violate_policy": handle_status_str(array_to_string(list_port_ssh['^Port'][i]), "1309")
                 
-            },
-            "PubkeyAuthentication": {
+            })
+        output[i].append({ 
+                "name": "PubkeyAuthentication",
                 "value": array_to_string(list_pubkey_authen['^PubkeyAuthentication'][i]),
-                "status_check": handle_status_str(array_to_string(list_pubkey_authen['^PubkeyAuthentication'][i]), "no")     
-            },
-            "Hosts allow": {
+                "violate_policy": handle_status_str(array_to_string(list_pubkey_authen['^PubkeyAuthentication'][i]), "no")     
+            })
+
+        output[i].append({
+                "name": "Hosts allow",
                 "value": array_to_string(list_host_allow['host_allow'][i]),
-                "status_check": ""     
-            },
-            "Hosts deny": {
+                "violate_policy": ""     
+            })
+
+        output[i].append({
+                "name": "Hosts deny",
                 "value": array_to_string(list_host_deny['host_deny'][i]),
-                "status_check": ""     
-            }    
+                "violate_policy": ""
             })     
         list.append({"ip": ip[i], "task": name_task, "output": output[i],"status": status[i], "error": error[i], "date": time[i]})
 
