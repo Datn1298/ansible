@@ -1,5 +1,5 @@
 
-from app.run_ansible import *
+from run_ansible import *
 
 """
 - pt = performance test

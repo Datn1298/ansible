@@ -9,13 +9,13 @@ from audit_port import audit_port_open
 from audit_network_connection import audit_network_connection
 from audit_permission import audit_file
 from audit_crontab import audit_crontab
+from audit_service import audit_service
 
 app = Flask(__name__)
 
 @app.route('/audit')
 def audit():
-   object = audit_password_policy("")
-   return object
+   return audit_datetime("")
 
 if __name__ == '__main__':
    app.run()

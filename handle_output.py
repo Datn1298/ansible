@@ -2,21 +2,17 @@ def array_to_string(list):
     return (' '.join([str(elem) for elem in list]))
 
 def handle_status_install(str):
-    status = ""
-    if(str=='ii'):
-        status="Đã cài đặt thành công"
-    elif(str!=''):
-        status="Cài bị lỗi"
+    if str == '':
+        return "Chưa cài đặt"
+    elif str == 'ii':
+        return "Đã cài đặt thành công"
     else:
-        status="Chưa cài đặt"
-    return status
+        return "Cài bị lỗi"
 
 def handle_status_str(str, eo):
-    status = ""
     if eo == "":
-        status = "None"
+        return "None"
     elif str == eo:
-        status = "True"
+        return "True"
     else: 
-        status = "False"
-    return status
+        return "False"

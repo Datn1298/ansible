@@ -1,9 +1,9 @@
 from run_ansible import *
 
 def install_apache(http_host, http_conf, app_user, inventory):
-    path= "/var/www/" + http_host
-    path_index = path+"/index.html"
-    path_dest_config = '/etc/apache2/sites-available/'+ http_conf
+    path = f"/var/www/{http_host}"
+    path_index = f"{path}/index.html"
+    path_dest_config = f'/etc/apache2/sites-available/{http_conf}'
     path_template_config = "file/apache.conf.j2"
     path_src_config = "file/default.conf.j2"
 
@@ -17,26 +17,25 @@ def install_apache(http_host, http_conf, app_user, inventory):
         _config.write(str(config))
 
     name_task = "Install Apache"
-        
-    tasks=[
-        dict(action=dict(module='apt', args=dict(name='apache2', update_cache='yes', state='present'))),
-        dict(action=dict(module='shell', args='ufw allow 80')),
-        dict(action=dict(module='file', args=dict(path=path, state='directory', owner=app_user , mode='0775'))),
-        dict(action=dict(module='file', args=dict(path=path_index, state='touch'))),
-        dict(action=dict(module='template', args=dict(src=path_src_config, dest=path_dest_config))),
-        dict(action=dict(module='service', args=dict(name="apache2", state="restarted"))),
-        dict(action=dict(module='shell', args='a2ensite ' + http_conf)),
-        dict(action=dict(module='service', args=dict(name="apache2", state="reloaded"))),
-        dict(action=dict(module='shell', args='a2dissite 000-default.conf')),
-        dict(action=dict(module='service', args=dict(name="apache2", state="reloaded")))
-    ]
+
+    tasks = [dict(action=dict(module='apt', args=dict(name='apache2', update_cache='yes', state='present'))), 
+            dict(action=dict(module='shell', args='ufw allow 80')), 
+            dict(action=dict(module='file', args=dict(path=path, state='directory', owner=app_user, mode='0775'))), 
+            dict(action=dict(module='file', args=dict(path=path_index, state='touch'))), 
+            dict(action=dict(module='template', args=dict(src=path_src_config, dest=path_dest_config))), 
+            dict(action=dict(module='service', args=dict(name="apache2", state="restarted"))), 
+            dict(action=dict(module='shell', args=f'a2ensite {http_conf}')), 
+            dict(action=dict(module='service', args=dict(name="apache2", state="reloaded"))), 
+            dict(action=dict(module='shell', args='a2dissite 000-default.conf')), 
+            dict(action=dict(module='service', args=dict(name="apache2", state="reloaded")))]
+
     ip, status, output, error, time = run_ansible(tasks, "install", inventory)
     return { "ip": ip, "task": name_task, "status": status, "result": output, "error": error, "date": time} 
 
 def install_nginx(http_host, http_conf, app_user, inventory):
-    path= "/var/www/" + http_host + "/html"
-    path_index = path+"/index.html"
-    path_dest_config = '/etc/nginx/sites-available/'+ http_conf
+    path = f"/var/www/{http_host}/html"
+    path_index = f"{path}/index.html"
+    path_dest_config = f'/etc/nginx/sites-available/{http_conf}'
     path_template_config = "nginx.conf.j2"
     path_src_config = "default.conf.j2"
     path_src_site = "/etc/nginx/sites-available/default"
@@ -52,9 +51,9 @@ def install_nginx(http_host, http_conf, app_user, inventory):
         _config.write(str(config))
 
     name_task = "Install Nginx"
-        
+
     tasks=[
-    dict(action=dict(module='apt', args=dict(name='nginx', update_cache='yes', state='present'))),
+        dict(action=dict(module='apt', args=dict(name='nginx', update_cache='yes', state='present'))),
         dict(action=dict(module='shell', args='ufw allow 80')),
         dict(action=dict(module='file', args=dict(path=path, state='directory', owner=app_user , mode='0775'))),
         dict(action=dict(module='file', args=dict(path=path_index, state='touch'))),

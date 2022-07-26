@@ -25,10 +25,8 @@ def audit_port_open(inventory):
 
     list = []
     for i in range(len(ip)):
-        result = []
-        for j in range(len(list_port)):
-            result.append(
-                {"Port": list_port[j], "PID": list_pid[j], "Program name": list_service[j]})
+        result = [{"Port": list_port[j], "PID": list_pid[j], "Program name": list_service[j]} for j in range(len(list_port))]
+
         output[i] = result
         list.append({"ip": ip[i], "task": name_task, "output": output[i],
                     "status": status[i], "error": error[i], "date": time[i]})
