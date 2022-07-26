@@ -15,7 +15,7 @@ app = Flask(__name__)
 
 @app.route('/audit')
 def audit():
-   return audit_datetime("")
+   return audit_ssh("")
 
 if __name__ == '__main__':
    app.run()

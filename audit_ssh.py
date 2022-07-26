@@ -34,20 +34,20 @@ def audit_ssh(inventory):
     for i in range(len(ip)):
         output[i].append({
                 "name": "PermitRootLogin",
-                "value": array_to_string(list_permitroot['^PermitRootLogin'][i]),
-                "violate_policy": handle_status_str(array_to_string(list_permitroot['^PermitRootLogin'][i]), "no")
+                "value": handle_status_str(array_to_string(list_permitroot['^PermitRootLogin'][i]), "no")["value"],
+                "violate_policy": handle_status_str(array_to_string(list_permitroot['^PermitRootLogin'][i]), "no")["status"]
             })
 
         output[i].append({
                 "name": "Port SSH",
-                "value": array_to_string(list_port_ssh['^Port'][i]),
-                "violate_policy": handle_status_str(array_to_string(list_port_ssh['^Port'][i]), "1309")
+                "value": handle_status_str(array_to_string(list_port_ssh['^Port'][i]), "1309")["value"],
+                "violate_policy": handle_status_str(array_to_string(list_port_ssh['^Port'][i]), "1309")["status"]
                 
             })
         output[i].append({ 
                 "name": "PubkeyAuthentication",
-                "value": array_to_string(list_pubkey_authen['^PubkeyAuthentication'][i]),
-                "violate_policy": handle_status_str(array_to_string(list_pubkey_authen['^PubkeyAuthentication'][i]), "no")     
+                "value": handle_status_str(array_to_string(list_pubkey_authen['^PubkeyAuthentication'][i]), "no")["value"],
+                "violate_policy": handle_status_str(array_to_string(list_pubkey_authen['^PubkeyAuthentication'][i]), "no")["status"]     
             })
 
         output[i].append({

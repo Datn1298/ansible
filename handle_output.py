@@ -9,10 +9,15 @@ def handle_status_install(str):
     else:
         return "Cài bị lỗi"
 
-def handle_status_str(str, eo):
+def handle_status_str(str_input, eo):
+    status = ""
     if eo == "":
-        return "None"
-    elif str == eo:
-        return "True"
+        status =  "None"
+    elif str_input == "":
+        str_input = "Default"
+        status = "false"
+    elif str_input == eo:
+        status = "true"
     else: 
-        return "False"
+        status = "false"
+    return {"value": str_input, "status":status}
